@@ -58,6 +58,8 @@ public class BookDAO implements DAO<Book> {
                 books.add(Book.fromResultSet(rs));
             }
 
+            return books;
+
         } catch (SQLException e) {
             SqlExceptionTracer.trace(e);
         }
@@ -67,29 +69,38 @@ public class BookDAO implements DAO<Book> {
     }
 
     @Override
-    public void save(Book book) {
+    public Book save(Book book) {
+
+        if (book == null) {
+            return null;
+        }
 
         String query = "insert into "
                 + BookTable.TABLE_NAME
-                + " (" + BookTable.ISBN + ", " + BookTable.TITLE
+                + " (" + BookTable.ID + ", " + BookTable.ISBN + ", " + BookTable.TITLE
                 + ", " + BookTable.AUTHOR + ", " + BookTable.YEAR
                 + ", " + BookTable.AVALIABLE + ", " + BookTable.COVER
-                + ") values (?,?,?,?,?,?)";
+                + ") values (?,?,?,?,?,?,?)";
 
         try (var pst = conn.prepareStatement(query)) {
 
-            pst.setString(1, book.getIsbn());
-            pst.setString(2, book.getTitle());
-            pst.setString(3, book.getAuthor());
-            pst.setInt(4, book.getYear());
-            pst.setBoolean(5, book.isAvaliable());
-            pst.setBytes(6, book.getCover());
+            pst.setLong(1, book.getIdBook());
+            pst.setString(2, book.getIsbn());
+            pst.setString(3, book.getTitle());
+            pst.setString(4, book.getAuthor());
+            pst.setInt(5, book.getYear());
+            pst.setBoolean(6, book.isAvaliable());
+            pst.setBytes(7, book.getCover());
 
             pst.executeUpdate();
+
+            return book;
 
         } catch (SQLException e) {
             SqlExceptionTracer.trace(e);
         }
+
+        return null;
 
     }
 
@@ -97,10 +108,10 @@ public class BookDAO implements DAO<Book> {
     public void update(Book book) {
 
         String query = "select * from "
-                + BookTable.TABLE_NAME + "where "
+                + BookTable.TABLE_NAME + " where "
                 + BookTable.ID + " = " + book.getIdBook();
 
-        try (var st = conn.createStatement()) {
+        try (var st = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_UPDATABLE)) {
 
             ResultSet rs = st.executeQuery(query);
 
@@ -142,6 +153,8 @@ public class BookDAO implements DAO<Book> {
                 if (oldCover != newCover) {
                     rs.updateBytes(BookTable.COVER, newCover);
                 }
+
+                rs.updateRow();
             }
 
         } catch (SQLException e) {
@@ -163,7 +176,7 @@ public class BookDAO implements DAO<Book> {
 
         try (var st = conn.createStatement()) {
 
-            st.executeQuery(query);
+            st.executeUpdate(query);
 
         } catch (SQLException e) {
 
@@ -219,11 +232,11 @@ public class BookDAO implements DAO<Book> {
     @Override
     public void deleteAll() {
 
-        String query = "delete * from " + BookTable.TABLE_NAME;
+        String query = "delete from " + BookTable.TABLE_NAME;
 
         try (var st = conn.createStatement()) {
 
-            st.executeQuery(query);
+            st.executeUpdate(query);
 
         } catch (SQLException e) {
 

@@ -10,7 +10,9 @@ import com.zervladpy.utils.exceptions.SqlExceptionTracer;
 
 public class H2Connection implements ConnectionManager {
 
-    private static Connection conn;
+    private Connection conn;
+
+    private static H2Connection instance;
 
     private H2Connection() {
         try {
@@ -20,21 +22,27 @@ public class H2Connection implements ConnectionManager {
         }
     }
 
-    public static Connection getConnection() {
-        if (conn == null) {
+    public static H2Connection getInstance() {
+        if (H2Connection.instance == null) {
             synchronized (H2Connection.class) {
-                if (conn == null) {
-                    new H2Connection();
+                if (instance == null) {
+                    H2Connection.instance = new H2Connection();
                 }
             }
         }
 
-        return conn;
+        return H2Connection.instance;
     }
 
-    public static void closeConnection() {
+    @Override
+    public Connection getConnection() {
+        return getInstance().conn;
+    }
+
+    @Override
+    public void closeConnection() {
         try {
-            conn.close();
+            getInstance().conn.close();
         } catch (SQLException e) {
             SqlExceptionTracer.trace(e);
         }

@@ -9,6 +9,8 @@ import java.sql.SQLException;
 
 import javax.imageio.ImageIO;
 
+import com.zervladpy.utils.constraints.BookTable;
+
 public class Book {
 
     private long idBook;
@@ -146,12 +148,12 @@ public class Book {
 
         Book book = new Book();
 
-        book.setIdBook(rs.getInt("idBook"));
-        book.setIsbn(rs.getString("isbn"));
-        book.setTitle(rs.getString("title"));
-        book.setAuthor(rs.getString("author"));
-        book.setYear(rs.getInt("year"));
-        book.setCover(rs.getBytes("cover"));
+        book.setIdBook(rs.getInt(BookTable.ID));
+        book.setIsbn(rs.getString(BookTable.ISBN));
+        book.setTitle(rs.getString(BookTable.TITLE));
+        book.setAuthor(rs.getString(BookTable.AUTHOR));
+        book.setYear(rs.getInt(BookTable.YEAR));
+        book.setCover(rs.getBytes(BookTable.COVER));
 
         return book;
     }
