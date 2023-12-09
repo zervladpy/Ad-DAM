@@ -1,49 +1,50 @@
 package com.zervladpy.data.model;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 
 public class Book {
 
-    private int idBook;
+    private long idBook;
     private String isbn;
     private String title;
     private String author;
     private int year;
-    private Boolean avaliable;
-    private byte[] portada;
+    private boolean avaliable;
+    private byte[] cover;
 
     public Book() {
     }
 
-    public Book(int idBook, String isbn, String title, String author, int year, Boolean avaliable, byte[] portada) {
+    public Book(String isbn, String title, String author, int year, boolean avaliable) {
+        this.isbn = isbn;
+        this.title = title;
+        this.author = author;
+        this.year = year;
+        this.avaliable = avaliable;
+    }
+
+    public Book(long idBook, String isbn, String title, String author, int year, boolean avaliable, byte[] cover) {
         this.idBook = idBook;
         this.isbn = isbn;
         this.title = title;
         this.author = author;
         this.year = year;
         this.avaliable = avaliable;
-        this.portada = portada;
+        this.cover = cover;
     }
 
-    public Book(String isbn, String title, String author, int year, Boolean avaliable) {
-        this.isbn = isbn;
-        this.title = title;
-        this.author = author;
-        this.year = year;
-        this.avaliable = avaliable;
-    }
-
-    public int getIdBook() {
+    public long getIdBook() {
         return idBook;
     }
 
-    public void setIdBook(int idBook) {
+    public void setIdBook(long idBook) {
         this.idBook = idBook;
     }
 
@@ -79,67 +80,80 @@ public class Book {
         this.year = year;
     }
 
-    public Boolean getAvaliable() {
+    public boolean isAvaliable() {
         return avaliable;
     }
 
-    public void setAvaliable(Boolean avaliable) {
+    public void setAvaliable(boolean avaliable) {
         this.avaliable = avaliable;
     }
 
-    public byte[] getPortada() {
-        return portada;
+    public byte[] getCover() {
+        return cover;
     }
 
-    public void setPortada(byte[] portada) {
-        this.portada = portada;
+    public void setCover(byte[] cover) {
+        this.cover = cover;
     }
 
-    public void setPortada(String portada) {
-
-        File file = new File(portada);
-
-        // TODO set portada from Route
-        // this.portada = file.;
+    public void setCover(Path path) {
     }
 
-    public void setPortada(Path portada) {
-
-        // TODO set portada from Path
-
-        // this.portada = portada;
+    public void setCover(String route) {
     }
 
-    public BufferedImage getImage() throws IOException {
+    public BufferedImage getImage() {
 
-        ByteArrayInputStream fl = new ByteArrayInputStream(this.portada);
-        return ImageIO.read(fl);
-
-    }
-
-    @Override
-    public int hashCode() {
-        return this.isbn.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-
-        if (obj == null) {
-            return false;
+        if (cover == null) {
+            return null;
         }
 
-        if (((Book) obj).hashCode() == this.hashCode()) {
-            return true;
-        }
+        ByteArrayInputStream bais = new ByteArrayInputStream(cover);
 
-        return false;
+        try {
+            return ImageIO.read(bais);
+        } catch (IOException ex) {
+            System.out.println("Error al leer la imagen");
+            return null;
+        }
 
     }
 
     @Override
     public String toString() {
-        return "Book(titulo=" + this.title + ", autor=" + this.author + ", año=" + this.year + ")";
+        return this.title + " - " + this.author + " - " + this.year;
+    }
+
+    @Override
+    public int hashCode() {
+        return isbn.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (obj == null || !(obj instanceof Book)) {
+            return false;
+        }
+
+        Book book = (Book) obj;
+
+        return hashCode() == book.hashCode();
+
+    }
+
+    public static Book fromResultSet(ResultSet rs) throws SQLException {
+
+        Book book = new Book();
+
+        book.setIdBook(rs.getInt("idBook"));
+        book.setIsbn(rs.getString("isbn"));
+        book.setTitle(rs.getString("title"));
+        book.setAuthor(rs.getString("author"));
+        book.setYear(rs.getInt("year"));
+        book.setCover(rs.getBytes("cover"));
+
+        return book;
     }
 
 }
