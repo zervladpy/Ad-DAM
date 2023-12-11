@@ -244,4 +244,37 @@ public class BookDAO implements DAO<Book> {
         }
     }
 
+    @Override
+    public void insertMany(List<Book> bList) {
+
+        String  query = "insert into " +
+                BookTable.TABLE_NAME +
+                " (" + BookTable.ID + ", " + BookTable.ISBN + ", " + BookTable.TITLE +
+                ", " + BookTable.AUTHOR + ", " + BookTable.YEAR +
+                ", " + BookTable.AVALIABLE + ", " + BookTable.COVER +
+                ") values (?,?,?,?,?,?,?)";
+
+        try (var pst = conn.prepareStatement(query)) {
+
+            for (Book book : bList) {
+
+                pst.setLong(1, book.getIdBook());
+                pst.setString(2, book.getIsbn());
+                pst.setString(3, book.getTitle());
+                pst.setString(4, book.getAuthor());
+                pst.setInt(5, book.getYear());
+                pst.setBoolean(6, book.isAvaliable());
+                pst.setBytes(7, book.getCover());
+
+                pst.addBatch();
+
+            }
+
+            pst.executeBatch();
+
+        } catch (SQLException e) {
+            SqlExceptionTracer.trace(e);
+        }
+    }
+
 }

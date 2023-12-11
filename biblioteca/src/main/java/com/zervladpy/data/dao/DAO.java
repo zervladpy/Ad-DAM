@@ -22,4 +22,6 @@ public interface DAO<T> {
 
     void deleteAll();
 
+    void insertMany(List<T> tList);
+
 }
